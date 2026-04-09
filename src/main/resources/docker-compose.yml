@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"   # Port gọi API
+      - "9001:9001"   # Port giao diện Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - ./minio_data:/data  # Lưu dữ liệu ra thư mục ngoài để không bị mất khi tắt Docker
+    command: server /data --console-address ":9001"
