@@ -29,7 +29,7 @@ public class S3Config {
         return S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .endpointOverride(URI.create(endpoint)) // BẺ LÁI VỀ MINIO HERE!
+                .endpointOverride(URI.create(endpoint)) 
                 .forcePathStyle(true) // CỰC KỲ QUAN TRỌNG: AWS dùng virtual-hosted style, MinIO bắt buộc dùng path style
                 .build();
     }
