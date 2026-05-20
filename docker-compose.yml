@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: rubysparks-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: rubysparks
+      MYSQL_USER: rubysparks_user
+      MYSQL_PASSWORD: rubysparks_password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    restart: always
+
+  minio:
+    image: minio/minio:latest
+    container_name: rubysparks-minio
+    ports:
+      - "9000:9000"   # Port gọi API
+      - "9001:9001"   # Port giao diện Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - ./minio_data:/data  # Lưu dữ liệu ra thư mục ngoài để không bị mất khi tắt Docker
+    command: server /data --console-address ":9001"
+    restart: always

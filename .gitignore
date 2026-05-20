@@ -40,6 +40,7 @@ out/
 # Giấu cấu hình cá nhân
 application.properties
 minio_data/
+mysql_data/
 
 # Giấu đồ chơi của IDE và Gradle
 .gradle/
