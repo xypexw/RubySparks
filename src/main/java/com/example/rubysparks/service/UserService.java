@@ -45,6 +45,7 @@ public class UserService {
         }
     }
 
+    // Đăng ký người dùng mới
     @Transactional
     public UserDTO register(RegisterRequest request) {
         if (request.getEmail() == null || !request.getEmail().matches(EMAIL_REGEX)) {
@@ -71,6 +72,7 @@ public class UserService {
         return convertToDTO(savedUser);
     }
 
+    // Đăng nhập
     public AuthResponse login(LoginRequest request) {
         String email = request.getUsername();
         User user = userRepository.findByEmail(email)
@@ -80,21 +82,23 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai địa chỉ email hoặc mật khẩu.");
         }
 
-        // Return a mock token for development purposes
-        String mockToken = "mock-jwt-token-for-" + user.getUsername();
+        // Generate a real standard JWT token
+        String jwtToken = com.example.rubysparks.util.JwtUtils.generateToken(user.getUsername(), user.getRole());
 
         return AuthResponse.builder()
-                .token(mockToken)
+                .token(jwtToken)
                 .user(convertToDTO(user))
                 .build();
     }
 
+    // Lấy thông tin người dùng theo ID
     public UserDTO getUserById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng."));
         return convertToDTO(user);
     }
 
+    // Yêu cầu gửi mã OTP quên mật khẩu
     public void forgotPassword(ForgotPasswordRequest request) {
         String email = request.getEmail();
         if (email == null || email.trim().isEmpty()) {
@@ -118,6 +122,7 @@ public class UserService {
         emailService.sendVerificationCode(user.getEmail(), code);
     }
 
+    // Đặt lại mật khẩu bằng mã OTP
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         String email = request.getEmail();
@@ -150,6 +155,7 @@ public class UserService {
         otpCache.remove(user.getEmail());
     }
 
+    // Cập nhật thông tin cá nhân
     @Transactional
     public UserDTO updateProfile(UUID userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
@@ -180,6 +186,7 @@ public class UserService {
         return convertToDTO(updatedUser);
     }
 
+    // Chuyển đổi entity User sang UserDTO
     public UserDTO convertToDTO(User user) {
         return UserDTO.builder()
                 .userId(user.getUserId())

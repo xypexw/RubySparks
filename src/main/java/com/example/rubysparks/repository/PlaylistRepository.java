@@ -8,5 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface PlaylistRepository extends JpaRepository<Playlist, UUID> {
-    List<Playlist> findByUserUserId(UUID userId);
+    List<Playlist> findByUserUserIdOrderByNameAsc(UUID userId);
+    List<Playlist> findByNameContainingIgnoreCaseAndStatus(String name, String status);
 }

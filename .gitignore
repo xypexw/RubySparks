@@ -39,6 +39,7 @@ out/
 
 # Giấu cấu hình cá nhân
 application.properties
+application-local.yml
 minio_data/
 mysql_data/
 

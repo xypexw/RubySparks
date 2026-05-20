@@ -20,8 +20,16 @@ public class SongService {
     private final LikedSongRepository likedSongRepository;
     private final ListenHistoryRepository listenHistoryRepository;
 
+    // Tạo bài hát mới
     @Transactional
     public SongDTO createSong(SongDTO songDTO) {
+        if (songDTO.getItunesId() != null && !songDTO.getItunesId().trim().isEmpty()) {
+            java.util.Optional<Song> existing = songRepository.findByItunesId(songDTO.getItunesId().trim());
+            if (existing.isPresent()) {
+                return convertToDTO(existing.get());
+            }
+        }
+
         Song song = Song.builder()
                 .title(songDTO.getTitle())
                 .artistName(songDTO.getArtistName())
@@ -38,12 +46,14 @@ public class SongService {
         return convertToDTO(savedSong);
     }
 
+    // Lấy bài hát theo ID
     public SongDTO getSongById(UUID songId) {
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new RuntimeException("Song not found"));
         return convertToDTO(song);
     }
 
+    // Tìm kiếm bài hát theo từ khóa
     public List<SongDTO> searchSongs(String query) {
         List<Song> songs = songRepository.findByTitleContainingIgnoreCase(query);
         if (songs.isEmpty()) {
@@ -52,10 +62,12 @@ public class SongService {
         return songs.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    // Lấy tất cả bài hát
     public List<SongDTO> getAllSongs() {
         return songRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    // Thích bài hát
     @Transactional
     public void likeSong(UUID userId, UUID songId) {
         User user = userRepository.findById(userId)
@@ -78,6 +90,7 @@ public class SongService {
         likedSongRepository.save(likedSong);
     }
 
+    // Bỏ thích bài hát
     @Transactional
     public void unlikeSong(UUID userId, UUID songId) {
         LikedSongId likedSongId = new LikedSongId(userId, songId);
@@ -86,6 +99,7 @@ public class SongService {
         }
     }
 
+    // Ghi nhận lịch sử nghe nhạc
     @Transactional
     public void recordListenHistory(UUID userId, UUID songId) {
         User user = userRepository.findById(userId)
@@ -102,6 +116,7 @@ public class SongService {
         listenHistoryRepository.save(listenHistory);
     }
 
+    // Lấy các bài hát đã thích của người dùng
     public List<SongDTO> getLikedSongs(UUID userId) {
         List<LikedSong> likedSongs = likedSongRepository.findByIdUserId(userId);
         return likedSongs.stream()
@@ -109,6 +124,7 @@ public class SongService {
                 .collect(Collectors.toList());
     }
 
+    // Chuyển đổi entity Song sang SongDTO
     public SongDTO convertToDTO(Song song) {
         return SongDTO.builder()
                 .songId(song.getSongId())
