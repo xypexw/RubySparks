@@ -29,4 +29,23 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserProfile(@PathVariable UUID userId) {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
+
+    @PutMapping("/users/{userId}/profile")
+    public ResponseEntity<UserDTO> updateProfile(
+            @PathVariable UUID userId,
+            @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(userService.updateProfile(userId, request));
+    }
+
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        userService.forgotPassword(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResponseEntity.ok().build();
+    }
 }
