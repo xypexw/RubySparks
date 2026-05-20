@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: RubySparks
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/rubysparks?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: rubysparks_user
+    password: rubysparks_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin123
+  bucket-name: rubysparks
+  region: us-east-1
+
+aws:
+  s3:
+    endpoint: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin123
+    bucket-name: rubysparks
+    region: us-east-1
