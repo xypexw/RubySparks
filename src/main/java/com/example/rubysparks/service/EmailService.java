@@ -2,6 +2,7 @@ package com.example.rubysparks.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -13,10 +14,13 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     public void sendVerificationCode(String toEmail, String code) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("Melono Music <no-reply@melono.com>");
+            message.setFrom("Melono <" + fromEmail + ">");
             message.setTo(toEmail);
             message.setSubject("Mã xác thực khôi phục mật khẩu - Melono");
             message.setText("Chào bạn,\n\nMã xác thực OTP khôi phục mật khẩu của bạn là: " + code 

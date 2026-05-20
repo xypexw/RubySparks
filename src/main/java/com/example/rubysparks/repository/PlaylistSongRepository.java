@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface PlaylistSongRepository extends JpaRepository<PlaylistSong, PlaylistSongId> {
     List<PlaylistSong> findByIdPlaylistId(UUID playlistId);
     List<PlaylistSong> findByIdSongId(UUID songId);
+    void deleteByIdPlaylistId(UUID playlistId);
 }

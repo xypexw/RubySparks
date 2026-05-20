@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface SongRepository extends JpaRepository<Song, UUID> {
     List<Song> findByTitleContainingIgnoreCase(String title);
     List<Song> findByArtistNameContainingIgnoreCase(String artistName);
+    java.util.Optional<Song> findByItunesId(String itunesId);
 }

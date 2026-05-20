@@ -14,4 +14,6 @@ public class PlaylistDTO {
     private String name;
     private String status;
     private LocalDateTime createdAt;
+    private String coverUrl;
+    private Integer songCount;
 }

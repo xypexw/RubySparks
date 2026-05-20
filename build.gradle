@@ -48,3 +48,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootRun {
+    // Tự động kích hoạt profile 'local' để đọc application-local.yml
+    systemProperty 'spring.profiles.active', 'local'
+}
