@@ -2,6 +2,7 @@ package com.example.rubysparks.dto;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,7 +18,13 @@ public class SongDTO {
     private String previewUrl;
     private String fileUrl;
     private String thumbnailUrl;
-    private Integer duration;
+    private String duration;
     private String status;
+    private UUID ownerUserId;
+    private String rejectReason;
+    private String description;
+    private List<String> genreIds;
     private LocalDateTime createdAt;
+    private Long listenCount;
 }
+

@@ -162,10 +162,23 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
 
         if (request.getUsername() != null) {
-            user.setUsername(request.getUsername().trim());
+            String trimmedUsername = request.getUsername().trim();
+            if (trimmedUsername.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên hiển thị không được để trống.");
+            }
+            user.setUsername(trimmedUsername);
         }
-        if (request.getStageName() != null) {
-            user.setStageName(request.getStageName().trim());
+        if ("ARTIST".equalsIgnoreCase(user.getRole())) {
+            if (request.getStageName() != null) {
+                String trimmedStageName = request.getStageName().trim();
+                if (trimmedStageName.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nghệ danh (Stage Name) không được để trống.");
+                }
+                if (userRepository.existsByStageNameIgnoreCaseAndUserIdNot(trimmedStageName, userId)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nghệ danh (Stage Name) đã được sử dụng bởi nghệ sĩ khác.");
+                }
+                user.setStageName(trimmedStageName);
+            }
         }
         if (request.getAvatarUrl() != null) {
             user.setAvatarUrl(request.getAvatarUrl().trim());

@@ -41,10 +41,22 @@ public class Song {
     private String thumbnailUrl;
 
     @Column(name = "duration")
-    private Integer duration;
+    private String duration;
 
     @Column(name = "status")
     private String status;
+
+    @Column(name = "owner_user_id")
+    private UUID ownerUserId;
+
+    @Column(name = "reject_reason")
+    private String rejectReason;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "genre_ids")
+    private String genreIds;
 
     @Column(name = "created_at", nullable = false)
     @Builder.Default
