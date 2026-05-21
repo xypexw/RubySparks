@@ -11,6 +11,9 @@ import java.util.UUID;
 public class ArtistRequestDTO {
     private UUID requestId;
     private UUID userId;
+    private String userName;
+    private String email;
+    private String avatarUrl;
     private String stageName;
     private String genre;
     private String bio;

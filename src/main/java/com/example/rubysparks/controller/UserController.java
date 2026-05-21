@@ -54,4 +54,30 @@ public class UserController {
         userService.resetPassword(request);
         return ResponseEntity.ok().build();
     }
+
+    // Lấy danh sách người dùng phân trang và lọc (Admin)
+    @GetMapping("/users")
+    public ResponseEntity<org.springframework.data.domain.Page<UserDTO>> getUsers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        return ResponseEntity.ok(userService.getUsers(search, role, status, pageable));
+    }
+
+    // Khóa tài khoản người dùng (Admin)
+    @PutMapping("/users/{userId}/ban")
+    public ResponseEntity<UserDTO> banUser(
+            @PathVariable UUID userId,
+            @RequestParam String reason) {
+        return ResponseEntity.ok(userService.banUser(userId, reason));
+    }
+
+    // Mở khóa tài khoản người dùng (Admin)
+    @PutMapping("/users/{userId}/unban")
+    public ResponseEntity<UserDTO> unbanUser(@PathVariable UUID userId) {
+        return ResponseEntity.ok(userService.unbanUser(userId));
+    }
 }
