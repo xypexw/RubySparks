@@ -47,4 +47,11 @@ public class GenreController {
     public ResponseEntity<List<SongDTO>> getSongsByGenre(@PathVariable UUID genreId) {
         return ResponseEntity.ok(genreService.getSongsByGenre(genreId));
     }
+
+    // Xóa thể loại
+    @DeleteMapping("/{genreId}")
+    public ResponseEntity<Void> deleteGenre(@PathVariable UUID genreId) {
+        genreService.deleteGenre(genreId);
+        return ResponseEntity.noContent().build();
+    }
 }

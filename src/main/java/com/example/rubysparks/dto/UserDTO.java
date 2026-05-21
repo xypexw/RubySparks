@@ -15,5 +15,7 @@ public class UserDTO {
     private String role;
     private String avatarUrl;
     private String stageName;
+    private String status;
+    private String banReason;
     private LocalDateTime createdAt;
 }

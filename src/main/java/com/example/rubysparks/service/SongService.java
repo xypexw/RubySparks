@@ -30,6 +30,32 @@ public class SongService {
             }
         }
 
+        if ("LOCAL".equalsIgnoreCase(songDTO.getSource())) {
+            // 1. Kiểm tra theo fileUrl (nếu có)
+            if (songDTO.getFileUrl() != null && !songDTO.getFileUrl().trim().isEmpty()) {
+                java.util.Optional<Song> existing = songRepository.findByFileUrl(songDTO.getFileUrl().trim());
+                if (existing.isPresent()) {
+                    return convertToDTO(existing.get());
+                }
+            }
+            // 2. Kiểm tra theo previewUrl (nếu có)
+            if (songDTO.getPreviewUrl() != null && !songDTO.getPreviewUrl().trim().isEmpty()) {
+                java.util.Optional<Song> existing = songRepository.findByPreviewUrl(songDTO.getPreviewUrl().trim());
+                if (existing.isPresent()) {
+                    return convertToDTO(existing.get());
+                }
+            }
+            // 3. Kiểm tra theo title, artistName và source
+            if (songDTO.getTitle() != null && songDTO.getArtistName() != null) {
+                java.util.Optional<Song> existing = songRepository.findByTitleAndArtistNameAndSource(
+                        songDTO.getTitle().trim(), songDTO.getArtistName().trim(), "LOCAL"
+                );
+                if (existing.isPresent()) {
+                    return convertToDTO(existing.get());
+                }
+            }
+        }
+
         String genreIdsStr = null;
         if (songDTO.getGenreIds() != null && !songDTO.getGenreIds().isEmpty()) {
             genreIdsStr = String.join(",", songDTO.getGenreIds());

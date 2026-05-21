@@ -88,9 +88,13 @@ public class ArtistRequestService {
     }
 
     public ArtistRequestDTO convertToDTO(ArtistRequest request) {
+        User user = request.getUser();
         return ArtistRequestDTO.builder()
                 .requestId(request.getRequestId())
-                .userId(request.getUser().getUserId())
+                .userId(user.getUserId())
+                .userName(user.getStageName() != null && !user.getStageName().isEmpty() ? user.getStageName() : user.getUsername())
+                .email(user.getEmail())
+                .avatarUrl(user.getAvatarUrl())
                 .stageName(request.getStageName())
                 .genre(request.getGenre())
                 .bio(request.getBio())

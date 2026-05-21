@@ -7,6 +7,8 @@ import com.example.rubysparks.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +26,7 @@ public class GenreService {
     @Transactional
     public GenreDTO createGenre(GenreDTO genreDTO) {
         if (genreRepository.existsByName(genreDTO.getName())) {
-            throw new RuntimeException("Genre name already exists");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Đã có thể loại này");
         }
 
         Genre genre = Genre.builder()
@@ -72,6 +74,15 @@ public class GenreService {
         return genreSongs.stream()
                 .map(gs -> songService.convertToDTO(gs.getSong()))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteGenre(UUID genreId) {
+        Genre genre = genreRepository.findById(genreId)
+                .orElseThrow(() -> new RuntimeException("Genre not found"));
+        List<GenreSong> associations = genreSongRepository.findByIdGenreId(genreId);
+        genreSongRepository.deleteAll(associations);
+        genreRepository.delete(genre);
     }
 
     public GenreDTO convertToDTO(Genre genre) {

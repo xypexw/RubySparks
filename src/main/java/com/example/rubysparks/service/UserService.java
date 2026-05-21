@@ -82,6 +82,16 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sai địa chỉ email hoặc mật khẩu.");
         }
 
+        if ("BANNED".equalsIgnoreCase(user.getStatus())) {
+            String reason = user.getBanReason();
+            if (reason == null || reason.trim().isEmpty()) {
+                reason = "Tài khoản của bạn đã bị khóa bởi quản trị viên.";
+            } else {
+                reason = "Tài khoản của bạn đã bị khóa. Lý do: " + reason.trim();
+            }
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, reason);
+        }
+
         // Generate a real standard JWT token
         String jwtToken = com.example.rubysparks.util.JwtUtils.generateToken(user.getUsername(), user.getRole());
 
@@ -208,7 +218,41 @@ public class UserService {
                 .role(user.getRole())
                 .avatarUrl(user.getAvatarUrl())
                 .stageName(user.getStageName())
+                .status(user.getStatus())
+                .banReason(user.getBanReason())
                 .createdAt(user.getCreatedAt())
                 .build();
+    }
+
+    // Lấy danh sách người dùng phân trang và lọc (Admin)
+    public org.springframework.data.domain.Page<UserDTO> getUsers(
+            String search, String role, String status, org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<User> usersPage = userRepository.findAllFiltered(search, role, status, pageable);
+        return usersPage.map(this::convertToDTO);
+    }
+
+    // Khóa tài khoản (Admin)
+    @Transactional
+    public UserDTO banUser(UUID userId, String reason) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể khóa tài khoản quản trị viên.");
+        }
+        user.setStatus("BANNED");
+        user.setBanReason(reason != null ? reason.trim() : "");
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
+    // Mở khóa tài khoản (Admin)
+    @Transactional
+    public UserDTO unbanUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
+        user.setStatus("ACTIVE");
+        user.setBanReason("");
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
     }
 }

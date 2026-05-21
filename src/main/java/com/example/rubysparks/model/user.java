@@ -37,6 +37,13 @@ public class User {
     @Column(name = "stage_name")
     private String stageName;
 
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private String status = "ACTIVE";
+
+    @Column(name = "ban_reason")
+    private String banReason;
+
     @Column(name = "created_at", nullable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
