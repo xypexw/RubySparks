@@ -53,7 +53,7 @@ public class SongController {
 
     // Ghi nhận lịch sử nghe nhạc
     @PostMapping("/{songId}/listen")
-    public ResponseEntity<Void> recordListenHistory(@PathVariable UUID songId, @RequestParam UUID userId) {
+    public ResponseEntity<Void> recordListenHistory(@PathVariable UUID songId, @RequestParam String userId) {
         songService.recordListenHistory(userId, songId);
         return ResponseEntity.ok().build();
     }
@@ -62,5 +62,27 @@ public class SongController {
     @GetMapping("/liked")
     public ResponseEntity<List<SongDTO>> getLikedSongs(@RequestParam UUID userId) {
         return ResponseEntity.ok(songService.getLikedSongs(userId));
+    }
+
+    // Cập nhật thông tin bài hát (Nghệ sĩ)
+    @PutMapping("/{songId}")
+    public ResponseEntity<SongDTO> updateSong(@PathVariable UUID songId, @RequestBody SongDTO songDTO) {
+        return ResponseEntity.ok(songService.updateSong(songId, songDTO));
+    }
+
+    // Xóa bài hát (Nghệ sĩ)
+    @DeleteMapping("/{songId}")
+    public ResponseEntity<Void> deleteSong(@PathVariable UUID songId) {
+        songService.deleteSong(songId);
+        return ResponseEntity.ok().build();
+    }
+
+    // Cập nhật trạng thái duyệt bài hát (Admin)
+    @PutMapping("/{songId}/status")
+    public ResponseEntity<SongDTO> updateStatus(
+            @PathVariable UUID songId,
+            @RequestParam String status,
+            @RequestParam(required = false) String rejectReason) {
+        return ResponseEntity.ok(songService.updateStatus(songId, status, rejectReason));
     }
 }

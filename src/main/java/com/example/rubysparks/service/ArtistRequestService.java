@@ -8,6 +8,8 @@ import com.example.rubysparks.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,9 +26,18 @@ public class ArtistRequestService {
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (dto.getStageName() == null || dto.getStageName().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nghệ danh (Stage Name) không được để trống.");
+        }
+
+        String trimmedStageName = dto.getStageName().trim();
+        if (userRepository.existsByStageNameIgnoreCase(trimmedStageName)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nghệ danh (Stage Name) đã được sử dụng bởi nghệ sĩ khác.");
+        }
+
         ArtistRequest request = ArtistRequest.builder()
                 .user(user)
-                .stageName(dto.getStageName())
+                .stageName(trimmedStageName)
                 .genre(dto.getGenre())
                 .bio(dto.getBio())
                 .status("PENDING")
@@ -60,8 +71,16 @@ public class ArtistRequestService {
 
         if ("APPROVED".equalsIgnoreCase(status)) {
             User user = request.getUser();
+            String stageName = request.getStageName();
+            if (stageName == null || stageName.trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu nghệ sĩ không hợp lệ: Thiếu nghệ danh.");
+            }
+            String trimmedStageName = stageName.trim();
+            if (userRepository.existsByStageNameIgnoreCaseAndUserIdNot(trimmedStageName, user.getUserId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nghệ danh (Stage Name) đã được sử dụng bởi nghệ sĩ khác.");
+            }
             user.setRole("ARTIST");
-            user.setStageName(request.getStageName());
+            user.setStageName(trimmedStageName);
             userRepository.save(user);
         }
 

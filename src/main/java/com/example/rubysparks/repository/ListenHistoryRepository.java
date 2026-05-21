@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface ListenHistoryRepository extends JpaRepository<ListenHistory, UUID> {
     List<ListenHistory> findByUserUserIdOrderByListenedAtDesc(UUID userId);
     List<ListenHistory> findBySongSongId(UUID songId);
+    long countBySongSongId(UUID songId);
 }
+
