@@ -2,7 +2,10 @@ package com.example.rubysparks.service;
 
 import com.example.rubysparks.dto.*;
 import com.example.rubysparks.model.User;
+import com.example.rubysparks.model.ArtistRequest;
 import com.example.rubysparks.repository.UserRepository;
+import com.example.rubysparks.repository.SongRepository;
+import com.example.rubysparks.repository.ArtistRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +27,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final SongRepository songRepository;
+    private final ArtistRequestRepository artistRequestRepository;
     
     // Cache in-memory lưu trữ OTP (email -> OtpSession)
     private final ConcurrentHashMap<String, OtpSession> otpCache = new ConcurrentHashMap<>();
@@ -252,6 +258,40 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
         user.setStatus("ACTIVE");
         user.setBanReason("");
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
+    // Cập nhật vai trò người dùng (Admin)
+    @Transactional
+    public UserDTO updateUserRole(UUID userId, String role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng."));
+
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chỉnh sửa vai trò của quản trị viên.");
+        }
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể chuyển vai trò thành quản trị viên.");
+        }
+
+        String oldRole = user.getRole();
+        String newRole = role.toUpperCase();
+
+        if ("ARTIST".equalsIgnoreCase(oldRole) && "USER".equalsIgnoreCase(newRole)) {
+            // Ẩn tất cả bài hát thuộc về nghệ sĩ này
+            songRepository.hideAllByOwnerUserId(userId);
+        }
+
+        if ("USER".equalsIgnoreCase(newRole)) {
+            // Xóa các yêu cầu làm nghệ sĩ cũ để người dùng có thể đăng ký lại từ đầu (tự sửa chữa các bản ghi lỗi cũ)
+            List<ArtistRequest> requests = artistRequestRepository.findByUserUserId(userId);
+            if (requests != null && !requests.isEmpty()) {
+                artistRequestRepository.deleteAll(requests);
+            }
+        }
+
+        user.setRole(newRole);
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }

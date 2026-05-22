@@ -89,6 +89,7 @@ public class PlaylistService {
     public List<SongDTO> getPlaylistSongs(UUID playlistId) {
         List<PlaylistSong> playlistSongs = playlistSongRepository.findByIdPlaylistId(playlistId);
         return playlistSongs.stream()
+                .sorted(java.util.Comparator.comparing(PlaylistSong::getAddedAt, java.util.Comparator.nullsFirst(java.util.Comparator.naturalOrder())))
                 .map(ps -> songService.convertToDTO(ps.getSong()))
                 .collect(Collectors.toList());
     }
@@ -211,9 +212,29 @@ public class PlaylistService {
             if (playlistSongs != null) {
                 songCount = playlistSongs.size();
                 if (!playlistSongs.isEmpty()) {
-                    PlaylistSong lastAdded = playlistSongs.get(playlistSongs.size() - 1);
-                    if (lastAdded.getSong() != null) {
-                        coverUrl = lastAdded.getSong().getThumbnailUrl();
+                    // Lấy ra tất cả các bài hát không bị ẩn
+                    List<PlaylistSong> nonHiddenSongs = playlistSongs.stream()
+                            .filter(ps -> ps.getSong() != null && !"HIDDEN".equalsIgnoreCase(ps.getSong().getStatus()))
+                            .collect(Collectors.toList());
+
+                    if (!nonHiddenSongs.isEmpty()) {
+                        // Xác định bài hát cuối cùng được thêm vào mặc định (của tất cả bài hát)
+                        PlaylistSong lastAdded = playlistSongs.stream()
+                                .filter(ps -> ps.getAddedAt() != null)
+                                .max(java.util.Comparator.comparing(PlaylistSong::getAddedAt))
+                                .orElse(playlistSongs.get(playlistSongs.size() - 1));
+
+                        // Nếu bài hát cuối cùng mặc định không bị ẩn, dùng luôn thumbnail của nó
+                        if (lastAdded.getSong() != null && !"HIDDEN".equalsIgnoreCase(lastAdded.getSong().getStatus())) {
+                            coverUrl = lastAdded.getSong().getThumbnailUrl();
+                        } else {
+                            // Ngược lại (bài hát đó bị ẩn), chọn ngẫu nhiên một bài hát không bị ẩn từ playlist
+                            long seed = playlist.getPlaylistId() != null ? playlist.getPlaylistId().getMostSignificantBits() : 0L;
+                            int randomIndex = new java.util.Random(seed).nextInt(nonHiddenSongs.size());
+                            if (nonHiddenSongs.get(randomIndex).getSong() != null) {
+                                coverUrl = nonHiddenSongs.get(randomIndex).getSong().getThumbnailUrl();
+                            }
+                        }
                     }
                 }
             }
