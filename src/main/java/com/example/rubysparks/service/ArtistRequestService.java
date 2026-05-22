@@ -5,6 +5,7 @@ import com.example.rubysparks.model.ArtistRequest;
 import com.example.rubysparks.model.User;
 import com.example.rubysparks.repository.ArtistRequestRepository;
 import com.example.rubysparks.repository.UserRepository;
+import com.example.rubysparks.repository.SongRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ public class ArtistRequestService {
 
     private final ArtistRequestRepository artistRequestRepository;
     private final UserRepository userRepository;
+    private final SongRepository songRepository;
 
     @Transactional
     public ArtistRequestDTO submitRequest(ArtistRequestDTO dto) {
@@ -82,6 +84,12 @@ public class ArtistRequestService {
             user.setRole("ARTIST");
             user.setStageName(trimmedStageName);
             userRepository.save(user);
+
+            // Tự động cập nhật tên nghệ sĩ (artistName) của các bài hát cũ thành nghệ danh mới
+            songRepository.updateArtistNameByOwnerUserId(trimmedStageName, user.getUserId());
+
+            // Khôi phục lại trạng thái hiển thị (APPROVED) cho toàn bộ các bài hát trước đây đã bị ẩn của nghệ sĩ
+            songRepository.restoreAllByOwnerUserId(user.getUserId());
         }
 
         return convertToDTO(savedRequest);

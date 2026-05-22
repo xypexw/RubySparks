@@ -80,4 +80,12 @@ public class UserController {
     public ResponseEntity<UserDTO> unbanUser(@PathVariable UUID userId) {
         return ResponseEntity.ok(userService.unbanUser(userId));
     }
+
+    // Cập nhật vai trò người dùng (Admin)
+    @PutMapping("/users/{userId}/role")
+    public ResponseEntity<UserDTO> updateUserRole(
+            @PathVariable UUID userId,
+            @RequestParam String role) {
+        return ResponseEntity.ok(userService.updateUserRole(userId, role));
+    }
 }
